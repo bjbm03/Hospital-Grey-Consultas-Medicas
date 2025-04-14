@@ -1,0 +1,10 @@
+<%- include('partials/header'); %>
+<% if (user) { %>
+    <div class="user-info">
+      Bienvenido, <%= user.nombre %> (<%= user.rol %>)
+    </div>
+  <% } %>
+    <h1><%= message %></h1>
+    <p>Este es un ejemplo con EJS y módulos ES.</p>
+    <p>Este es un ejemplo consultas.</p>
+<%- include('partials/footer'); %>

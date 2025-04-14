@@ -1,0 +1,138 @@
+<%- include('partials/header'); %>
+    <h1><%= message %></h1>
+    <a href="/dashbord/consultas">Consultas</a>
+    <br> <br>
+    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+    <br> <br>
+    <pre><%= JSON.stringify(user, null, 2) %></pre>
+    <% if (user) { %>
+        <div class="user-info">
+          Bienvenido, <%= user.nombre %> (<%= user.rol %>)
+        </div>
+    <% } %>
+ 
+     <!-- Sección de Usuarios -->
+     <div class="users-section">
+        <h2>Lista de Usuarios</h2>
+        <!-- <button id="loadUsersBtn" class="btn-primary">Cargar Usuarios</button> -->
+        <div id="usersContainer" class="users-container">
+            <!-- Los usuarios se cargarán aquí -->
+        </div>
+    </div>
+
+    <script>
+        async function loadUsersOnPageLoad(){
+            try {
+                const response = await fetch('/api/usuario', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    renderUsers(result);
+                } else {
+                    console.error('Error:', result.message || 'No se pudieron cargar los usuarios');
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadUsersOnPageLoad);
+        /*
+        document.getElementById('loadUsersBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/usuario', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    console.log(result);
+                    renderUsers(result);
+                } else {
+                    alert('Error: ' + (result.message || 'No se pudieron cargar los usuarios'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            }
+        });
+        */
+        function renderUsers(users) {
+            const container = document.getElementById('usersContainer');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p>No hay usuarios registrados</p>';
+                return;
+            }
+            
+            // Creamos el HTML completo con template strings
+            let usersHTML = `
+                <table class="users-table" border="1px">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Fecha Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            // Recorremos los usuarios con for
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+                usersHTML += `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.nombre}</td>
+                        <td>${user.email}</td>
+                        <td>${user.rol}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `;
+            }
+            
+            // Cerramos las etiquetas
+            usersHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            // Insertamos todo el HTML de una vez
+            container.innerHTML = usersHTML;
+    }
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/dashbord/logout', {
+                    method: 'POST',
+                    credentials: 'include' // Importante para enviar cookies
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Redirigir al login después de cerrar sesión
+                    window.location.href = '/auth/login';
+                } else {
+                    alert('Error al cerrar sesión: ' + (result.error || ''));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión al intentar cerrar sesión');
+            }
+        });
+
+
+    </script>
+
+<%- include('partials/footer'); %>

@@ -1,0 +1,220 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"> <!-- Esta es la fuente -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="public/css/compras.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('../partials/menu'); %>
+            
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+                <pre><%= JSON.stringify(user, null, 2) %></pre>
+                <% if (user) { %>
+                    <div class="user-info">
+                      Bienvenido, <%= user.nombre %> 
+                    </div>
+                <% } %>
+
+                <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+
+                <div class="main-content">
+                    <h1>Consultas Medicas</h1>
+                    <button class="new-order"><i class="fas fa-plus"></i> Nueva Consulta</button>
+                    <div class="input-group mb-3">
+                        <input type="text" id="searchConsultasInput" class="form-control" placeholder="Buscar consultas...">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card p-3">
+                                <h2 id="total-consultas"></h2>
+                                <p>Total De Consultas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card p-3">
+                                <h2 id="consultas-pedientes" ></h2>
+                                <p>Consultas Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card p-3">
+                                <h2 id="consultas-completadas"></h2>
+                                <p>Consultas Completadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tabs mb-4">
+                        <button id="btnTodas" class="active">Todas</button>
+                        <button id="btnPendientes">Pendientes</button>
+                        <button id="btnCompletadas">Completadas</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <h2>Ordenes de Consulta</h2>
+                        <p>Consultas Medicas.</p>
+
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Paciente</th>
+                                    <th>Medico</th>
+                                    <th>Fecha De Consulta</th>
+                                    <th>Historial Medico</th>
+                                    <th>Estatus</th>
+                                    <th>Cita</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="consultasTableBody">
+                                <!-- Los datos se llenarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="new-order"><i class="fas fa-plus"></i> Nueva Orden</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para Crear Historial Médico -->
+    <div class="modal fade" id="crearHistorialModal" tabindex="-1" role="dialog" aria-labelledby="crearHistorialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="crearHistorialModalLabel">Crear Nuevo Historial Médico</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <form id="historialForm" enctype="multipart/form-data" >
+                <div class="row justify-content-center ">
+                   <!--  <div class="col-8">
+                        <div class="form-group">
+                        <label for="fecha_registro">Fecha de Registro</label>
+                        <input type="date" class="form-control" id="fecha_registro" name="fecha_registro" required>
+                        </div>
+                    </div> -->
+                    <div class="col-8">
+                        <div class="form-group">
+                        <label for="diagnostico">Diagnóstico</label>
+                        <textarea class="form-control" id="diagnostico" name="diagnostico" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="form-group">
+                        <label for="tratamiento">Tratamiento</label>
+                        <textarea class="form-control" id="tratamiento" name="tratamiento" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="form-group">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="form-group">
+                            <label for="archivo">Subir archivo (PDF o DOCX)</label>
+                            <input type="file" class="form-control-file" id="archivo" name="archivo" accept=".pdf,.docx">
+                            <small class="form-text text-muted">Formatos aceptados: PDF, DOCX</small>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="form-group">
+                            <input type="hidden" class="form-control" id="id_consultas_medicas" name="id_consultas_medicas" value="" required>
+                            <input type="hidden" class="form-control" id="id_consultas_paciente" name="id_consultas_paciente" value="" required>
+                            <input type="hidden" class="form-control" id="id_consultas_cita" name="id_consultas_paciente" value="" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="guardarHistorial">Guardar Historial</button>
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- Modal para Crear Historial Médico -->
+
+    <!-- Modal para Ver Historial Médico -->
+    <div class="modal fade" id="verHistorialModal" tabindex="-1" role="dialog" aria-labelledby="verHistorialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verHistorialModalLabel">Historial Médico</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Paciente:</h6>
+                            <p id="historial-paciente">---</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Médico:</h6>
+                            <p id="historial-medico">---</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Diagnóstico:</h6>
+                            <div class="card p-3 bg-light" id="historial-diagnostico">No registrado</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Tratamiento:</h6>
+                            <div class="card p-3 bg-light" id="historial-tratamiento">No registrado</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Observaciones:</h6>
+                            <div class="card p-3 bg-light" id="historial-observaciones">No registrado</div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Archivo Adjunto:</h6>
+                            <div class="card p-3 bg-light" id="historial-archivo">
+                                No hay archivo adjunto
+                            </div>
+                        </div>
+                    </div>
+                    <!-- En modo edición, agregar: -->
+                    <div class="row mt-3" id="editar-archivo-container" style="display: none;">
+                        <div class="col-12">
+                            <h6>Cambiar archivo:</h6>
+                            <input type="file" class="form-control-file" id="editar-archivo" name="archivo" accept=".pdf,.docx">
+                            <small class="form-text text-muted">Formatos aceptados: PDF, DOCX</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para Ver Historial Médico -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="public/consulta/consulta.js"></script>
+</body>
+</html>

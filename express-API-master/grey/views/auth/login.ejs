@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/public/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Iniciar Sesión</h1>
+        
+    
+        <form id="loginForm" action="/api/auth/login" method="POST">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        
+        <p>¿No tienes una cuenta? <a href="/auth/register">Regístrate</a></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(e.target.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Guardar el token en localStorage
+                    console.log("Token Login: " +  result.token )
+                    // localStorage Metodo no utilizado se esta utilizando cookies HTTP-Only
+                    //localStorage.setItem('token', result.token);
+                    // Redirigir al dashboard
+                    window.location.href = '/dashboard';
+                  
+                 
+                } else {
+                    showMessage(result.error || 'Error al iniciar sesión', 'error');
+                }
+            } catch (error) {
+                showMessage('Error al conectar con el servidor', 'error');
+            }
+        });
+        
+        function showMessage(text, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = text;
+            
+            const container = document.querySelector('.auth-container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+    <!-- <script src="/public/js/token.js"></script> -->
+</body>
+</html>

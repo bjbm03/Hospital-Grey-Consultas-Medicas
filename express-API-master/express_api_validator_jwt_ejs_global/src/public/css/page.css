@@ -1,0 +1,31 @@
+span a {
+    padding: 10px;
+    background-color: #cfbfbf;
+    border: 2px solid black;
+    text-decoration: none;
+    font-size: 24px;
+}
+
+.users-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.users-table th, .users-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.users-table th {
+    background-color: #f2f2f2;
+}
+
